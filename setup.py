@@ -27,7 +27,7 @@ setup(
     keywords='MKV Container MP4 XenonMKV',
     url='https://github.com/barisariburnu/xenonmkv',
     download_url='https://github.com/barisariburnu/xenonmkv/tarball/' + version,
-    packages=['xenonmkv'],
+    packages=['xenonmkv', 'xenonmkv.utils'],
     include_package_data=True,
     install_requires=[],
     description='XenonMKV is a video container conversion tool that takes MKV files and outputs them as MP4 files.',

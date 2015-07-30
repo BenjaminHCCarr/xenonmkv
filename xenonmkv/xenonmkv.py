@@ -34,12 +34,12 @@ import argparse
 import logging
 import traceback
 
-from util.file_utils import FileUtils
-from util.decoder import AudioDecoder
-from util.encoder import AACEncoder
-from util.mp4box import MP4Box
-from util.mkvfile import MKVFile
-from util.track import MKVTrack
+from utils.file_utils import FileUtils
+from utils.decoder import AudioDecoder
+from utils.encoder import AACEncoder
+from utils.mp4box import MP4Box
+from utils.mkvfile import MKVFile
+from utils.track import MKVTrack
 
 log = args = None
 

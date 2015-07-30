@@ -2,10 +2,10 @@ import subprocess
 import fractions
 import os
 
-from reference_frame import ReferenceFrameValidator
-from mkv_info_parser import MKVInfoParser
-from process_handler import ProcessHandler
-from track import MKVTrack, AudioTrack, VideoTrack, UnsupportedCodecError
+from xenonmkv.utils.reference_frame import ReferenceFrameValidator
+from xenonmkv.utils.mkv_info_parser import MKVInfoParser
+from xenonmkv.utils.process_handler import ProcessHandler
+from xenonmkv.utils.track import MKVTrack, AudioTrack, VideoTrack, UnsupportedCodecError
 
 
 class MKVFile():

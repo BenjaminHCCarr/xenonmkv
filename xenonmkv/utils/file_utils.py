@@ -1,7 +1,7 @@
 import os
 import sys
 
-from support_tools import SupportTools
+from xenonmkv.utils.support_tools import SupportTools
 
 
 class FileUtils:

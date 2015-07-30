@@ -1,6 +1,6 @@
 import os
 
-from process_handler import ProcessHandler
+from xenonmkv.utils.process_handler import ProcessHandler
 
 
 class AudioDecoder():
