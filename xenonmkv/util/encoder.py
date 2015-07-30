@@ -1,6 +1,6 @@
 import os
 
-from xenonmkv.process_handler import ProcessHandler
+from process_handler import ProcessHandler
 
 
 class AACEncoder():

@@ -34,12 +34,12 @@ import argparse
 import logging
 import traceback
 
-from xenonmkv.file_utils import FileUtils
-from xenonmkv.decoder import AudioDecoder
-from xenonmkv.encoder import AACEncoder
-from xenonmkv.mp4box import MP4Box
-from xenonmkv.mkvfile import MKVFile
-from xenonmkv.track import MKVTrack
+from util.file_utils import FileUtils
+from util.decoder import AudioDecoder
+from util.encoder import AACEncoder
+from util.mp4box import MP4Box
+from util.mkvfile import MKVFile
+from util.track import MKVTrack
 
 log = args = None
 
@@ -496,7 +496,7 @@ def main():
 
     # Move the file to the destination directory with the original name
     dest_path = os.path.join(args.destination, source_noext + ".mp4")
-    shutil.move(os.path.join(args.scratch_dir, "output.mp4"), dest_path)
+    shutil.move(os.path.join(args.scratch_dir, args.name + ".mp4"), dest_path)
 
     log.info("Processing of {0} complete; file saved as {1}".format(
              args.source_file, dest_path))
