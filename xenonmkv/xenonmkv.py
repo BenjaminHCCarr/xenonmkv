@@ -6,6 +6,7 @@
 
 import sys
 import os
+import re
 import ConfigParser
 
 
@@ -391,7 +392,7 @@ def main():
         log_exception("check_source_file", e)
 
     source_basename = os.path.basename(args.source_file)
-    source_noext = source_basename[0:source_basename.rindex(".")]
+    source_noext = ".".join(source_basename.rsplit('.')[:-1])
 
     if not args.name:
         args.name = source_noext
