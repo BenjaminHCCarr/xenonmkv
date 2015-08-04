@@ -392,7 +392,8 @@ def main():
         log_exception("check_source_file", e)
 
     source_basename = os.path.basename(args.source_file)
-    source_noext = ".".join(source_basename.rsplit('.')[:-1])
+    log.debug("SOURCE BASENAME: {0}".format(source_basename))
+    source_noext = source_basename
 
     if not args.name:
         args.name = source_noext
