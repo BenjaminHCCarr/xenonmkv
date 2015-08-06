@@ -2,6 +2,7 @@ import subprocess
 import fractions
 import os
 
+from xenonmkv.utils.text import REFERENCE_FRAMES_INFO
 from xenonmkv.utils.reference_frame import ReferenceFrameValidator
 from xenonmkv.utils.mkv_info_parser import MKVInfoParser
 from xenonmkv.utils.process_handler import ProcessHandler
@@ -270,7 +271,7 @@ class MKVFile():
                     self.log.warning("Video track {0} contains too many "
                                      "reference frames to play properly on low-powered "
                                      "devices. See {1} for details".format(
-                                        track.number, xenonmkv.util.text.REFERENCE_FRAMES_INFO)
+                                        track.number, REFERENCE_FRAMES_INFO)
                                     )
                     if not self.args.ignore_reference_frames:
                         raise Exception("Video track {0} has too many "
