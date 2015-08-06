@@ -32,7 +32,6 @@ class MP4Box():
         while run_attempts <= self.args.mp4box_retries:
             cmd = [self.args.tool_paths["mp4box"], self.args.name + ".mp4",
                    # Always create new file with mp4box/GPAC
-                   # https://github.com/jbillo/xenonmkv/issues/2
                    "-new",
                    "-add", self.video_path, "-fps", self.video_fps,
                    "-par", "1=" + self.video_pixel_ar,

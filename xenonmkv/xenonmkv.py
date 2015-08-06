@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 # XenonMKV: wrapper utility for MKV to MP4 container conversions
-# Jake Billo, jake@jakebillo.com
-# https://github.com/jbillo/xenonmkv
+# barisariburnu, barisariburnu@gmail.com
+# https://github.com/barisariburnu/xenonmkv
 
 import sys
 import os

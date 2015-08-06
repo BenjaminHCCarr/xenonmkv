@@ -46,8 +46,6 @@ class MKVFile():
         
         # Language code can either be 'en' or 'en_US' depending on platform. 
         # This ensures that the output of this tool can be parsed.
-        # See: https://github.com/jbillo/xenonmkv/pull/14, https://github.com/jbillo/xenonmkv/pull/15
-        # for historical wavering.
         language_code = self.get_en_ui_language()
         if language_code:
             mkvinfo_args.append("--ui-language")
@@ -296,9 +294,6 @@ class MKVFile():
                                      "devices. See {1} for details".format(
                                         track.number, REFERENCE_FRAMES_INFO)
                                     )
-                    if not self.args.ignore_reference_frames:
-                        raise Exception("Video track {0} has too many "
-                                        "reference frames".format(track.number))
                 else:
                     self.log.debug("Video track {0} has a reasonable number "
                                    "of reference frames, and should be compatible with "

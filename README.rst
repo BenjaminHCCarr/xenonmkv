@@ -72,8 +72,7 @@ If this changes in the future, requirements can be installed by running:
     instead of the system version.
 
     To put MP4Box into a specific path on compile, use the `--prefix`
-    option with `./configure` -
-    [thanks Romain](https://github.com/jbillo/xenonmkv/issues/2#issuecomment-10257505):
+    option with `./configure`
 
         ./configure --enable-debug --use-js=no --prefix=/opt/gpac
 
