@@ -6,6 +6,7 @@
 
 import sys
 import os
+import re
 import ConfigParser
 
 
@@ -34,12 +35,12 @@ import argparse
 import logging
 import traceback
 
-from xenonmkv.file_utils import FileUtils
-from xenonmkv.decoder import AudioDecoder
-from xenonmkv.encoder import AACEncoder
-from xenonmkv.mp4box import MP4Box
-from xenonmkv.mkvfile import MKVFile
-from xenonmkv.track import MKVTrack
+from utils.file_utils import FileUtils
+from utils.decoder import AudioDecoder
+from utils.encoder import AACEncoder
+from utils.mp4box import MP4Box
+from utils.mkvfile import MKVFile
+from utils.track import MKVTrack
 
 log = args = None
 
@@ -391,7 +392,8 @@ def main():
         log_exception("check_source_file", e)
 
     source_basename = os.path.basename(args.source_file)
-    source_noext = source_basename[0:source_basename.rindex(".")]
+    log.debug("SOURCE BASENAME: {0}".format(source_basename))
+    source_noext = source_basename
 
     if not args.name:
         args.name = source_noext
@@ -496,7 +498,7 @@ def main():
 
     # Move the file to the destination directory with the original name
     dest_path = os.path.join(args.destination, source_noext + ".mp4")
-    shutil.move(os.path.join(args.scratch_dir, "output.mp4"), dest_path)
+    shutil.move(os.path.join(args.scratch_dir, args.name + ".mp4"), dest_path)
 
     log.info("Processing of {0} complete; file saved as {1}".format(
              args.source_file, dest_path))

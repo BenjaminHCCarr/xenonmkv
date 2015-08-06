@@ -1,5 +1,6 @@
 import os
-from xenonmkv.process_handler import ProcessHandler
+
+from xenonmkv.utils.process_handler import ProcessHandler
 
 
 class MP4Box():
@@ -22,14 +23,14 @@ class MP4Box():
 
         # Make sure there is no 'output.mp4' in the scratch directory
         # MP4Box has a tendency to add tracks
-        output_file = os.path.join(os.getcwd(), "output.mp4")
+        output_file = os.path.join(os.getcwd(), self.args.name + ".mp4")
         if os.path.isfile(output_file):
             os.unlink(output_file)
 
         run_attempts = 1
 
         while run_attempts <= self.args.mp4box_retries:
-            cmd = [self.args.tool_paths["mp4box"], "output.mp4",
+            cmd = [self.args.tool_paths["mp4box"], self.args.name + ".mp4",
                    # Always create new file with mp4box/GPAC
                    # https://github.com/jbillo/xenonmkv/issues/2
                    "-new",
