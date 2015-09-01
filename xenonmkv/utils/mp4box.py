@@ -27,12 +27,12 @@ class MP4Box():
         if os.path.isfile(output_file):
             os.unlink(output_file)
 
-        cmd = [self.args.tool_paths["mp4box"],
-               "-add", self.video_path, "-fps", self.video_fps,
-               "-par", "1=" + self.video_pixel_ar,
-               "-add", self.audio_path, "-tmp", self.args.scratch_dir,
-               "-itags", "name=" + self.args.name,
-               "-new", self.args.name + ".mp4"]
+        cmd = ["ffmpeg", "-i", self.audio_path,
+               "-i", self.video_path,
+               "-codec", "copy",
+               "-fflags", "+genpts",
+               "-absf", "aac_adtstoasc",
+               self.args.name + ".mp4"]
 
         ph = ProcessHandler(self.args, self.log)
         process = ph.start_output(cmd)
@@ -42,10 +42,10 @@ class MP4Box():
             # so it does not have multiple tracks imported
             os.unlink(output_file)
             self.log.warning("An error occurred while creating "
-                             "an MP4 file with MP4Box")
+                             "an MP4 file with ffmpeg")
             # Continue retrying to create the file
 
-        self.log.debug("MP4Box process complete")
+        self.log.debug("ffmpeg process complete")
 
         # When complete, change back to original directory
         os.chdir(prev_dir)
