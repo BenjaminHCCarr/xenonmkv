@@ -29,7 +29,8 @@ class MP4Box():
 
         cmd = ["ffmpeg", "-i", self.audio_path,
                "-i", self.video_path,
-               "-codec", "copy",
+               "-acodec", "copy",
+               "-vcodec", "copy",
                "-fflags", "+genpts",
                "-absf", "aac_adtstoasc",
                self.args.name + ".mp4"]
