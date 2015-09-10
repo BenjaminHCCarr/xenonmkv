@@ -38,7 +38,7 @@ import traceback
 from utils.file_utils import FileUtils
 from utils.decoder import AudioDecoder
 from utils.encoder import AACEncoder
-from utils.ffmpeg import FFMpeg
+from utils.mp4box import MP4Box
 from utils.mkvfile import MKVFile
 from utils.track import MKVTrack
 
@@ -154,7 +154,7 @@ def main():
     log.addHandler(console_handler)
 
     dependencies = ('mkvinfo', 'mediainfo', 'mkvextract',
-                    'mplayer', 'faac', 'ffmpeg')
+                    'mplayer', 'faac', 'MP4Box')
 
     parser = argparse.ArgumentParser(description='Parse command line arguments '
                                      'for XenonMKV.')
@@ -267,8 +267,8 @@ def main():
                              correctly to FAT32-formatted storage. By default, you will
                              only see a warning message, and processing will continue.""",
                             action="store_true")
-    proc_group.add_argument('--ffmpeg-retries',
-                            help="""Set the number of retry attempts for FFMpeg to attempt
+    proc_group.add_argument('--mp4box-retries',
+                            help="""Set the number of retry attempts for MP4Box to attempt
                              to create a file (default: 3)""", default=3, type=int)
 
     dep_group = parser.add_argument_group("Custom paths",
@@ -485,10 +485,11 @@ def main():
         # Reference the already-valid audio file and put it into the MP4 container.
         encoded_audio = audio_file
 
-    # Now, throw things back together into a .mp4 container with FFMpeg.
-    ffmpeg = FFMpeg(video_file, encoded_audio, args, log)
+    # Now, throw things back together into a .mp4 container with Mp4Box.
+    video_track = to_convert.get_video_track()
+    mp4box = MP4Box(video_file, encoded_audio, video_track.frame_rate, args, log)
     try:
-        ffmpeg.package()
+        mp4box.package()
     except Exception as e:
         if not args.preserve_temp_files:
             cleanup_temp_files()
