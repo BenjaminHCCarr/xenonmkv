@@ -8,12 +8,9 @@ class FFMpeg():
 
     args = log = None
 
-    def __init__(self, video_path, audio_path, video_fps,
-                 video_pixel_ar, args, log):
+    def __init__(self, video_path, audio_path, args, log):
         self.video_path = video_path
         self.audio_path = audio_path
-        self.video_fps = str(video_fps)
-        self.video_pixel_ar = video_pixel_ar
         self.args = args
         self.log = log
 
@@ -27,13 +24,13 @@ class FFMpeg():
         if os.path.isfile(output_file):
             os.unlink(output_file)
 
-        cmd = [self.args.tool_paths["mp4box"], "output.mp4",
-               # Always create new file with mp4box/GPAC
-               "-add", self.video_path, "-fps", self.video_fps,
-               "-par", "1=" + self.video_pixel_ar,
-               "-add", self.audio_path, "-tmp", self.args.scratch_dir,
-               "-new",
-               "-itags", "name=" + self.args.name]
+        cmd = [self.args.tool_paths["ffmpeg"], "-i", self.audio_path,
+               "-i", self.video_path,
+               "-vcodec", "copy",
+               "-acodec", "copy",
+               "-fflags", "+genpts",
+               "-absf", "aac_adtstoasc",
+               self.args.name + ".mp4"]
 
         ph = ProcessHandler(self.args, self.log)
         process = ph.start_output(cmd)

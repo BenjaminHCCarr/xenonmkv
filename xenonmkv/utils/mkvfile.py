@@ -264,15 +264,6 @@ class MKVFile:
                                    "frames".format(mediainfo_track[2], track.number))
 
                 track.language = mediainfo_track[3].lower()
-                if mediainfo_track[4]:
-                    track.frame_rate = float(mediainfo_track[4])
-                elif mediainfo_track[7]:
-                    self.log.debug("Using original track frame rate as "
-                                   "container frame rate was not set")
-                    track.frame_rate = float(mediainfo_track[7])
-                else:
-                    raise ValueError("Could not read FPS information "
-                                     "from mediainfo output")
 
                 track.codec_id = mediainfo_track[5]
                 track.display_ar = self.parse_display_aspect_ratio(
@@ -283,8 +274,8 @@ class MKVFile:
                                "{3} reference frames".format(
                     track.number, track.width,
                     track.height, track.reference_frames))
-                self.log.debug("Video track {0} has {1:f} FPS and codec {2}".format(
-                    track.number, track.frame_rate, track.codec_id))
+                self.log.debug("Video track {0} has codec {1}".format(
+                    track.number, track.codec_id))
                 self.log.debug("Video track {0} has display aspect ratio {1:f}".format(
                     track.number, track.display_ar))
 

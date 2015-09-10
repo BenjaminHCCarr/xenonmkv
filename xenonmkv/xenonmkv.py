@@ -154,7 +154,7 @@ def main():
     log.addHandler(console_handler)
 
     dependencies = ('mkvinfo', 'mediainfo', 'mkvextract',
-                    'mplayer', 'faac', 'MP4Box')
+                    'mplayer', 'faac', 'ffmpeg')
 
     parser = argparse.ArgumentParser(description='Parse command line arguments '
                                      'for XenonMKV.')
@@ -486,9 +486,7 @@ def main():
         encoded_audio = audio_file
 
     # Now, throw things back together into a .mp4 container with FFMpeg.
-    video_track = to_convert.get_video_track()
-    ffmpeg = FFMpeg(video_file, encoded_audio, video_track.frame_rate,
-                    video_track.pixel_ar, args, log)
+    ffmpeg = FFMpeg(video_file, encoded_audio, args, log)
     try:
         ffmpeg.package()
     except Exception as e:
@@ -498,7 +496,6 @@ def main():
 
     # Move the file to the destination directory with the original name
     dest_path = os.path.join(args.destination, source_noext + ".mp4")
-    shutil.move(os.path.join(args.scratch_dir, args.name + ".mp4"), dest_path)
 
     log.info("Processing of {0} complete; file saved as {1}".format(
              args.source_file, dest_path))
