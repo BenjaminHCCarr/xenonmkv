@@ -26,27 +26,14 @@ class MKVFile:
     def get_path(self):
         return self.path
 
-    def get_en_ui_language(self):
-        self.log.debug('Getting possible UI language codes for mkvinfo')
-        mkvinfo_args = [self.args.tool_paths['mkvinfo'], '--ui-language', 'list']
-        self.log.debug("Executing '{0}'".format(' '.join(mkvinfo_args)))
-        result = subprocess.check_output(mkvinfo_args)
-        if 'en_US (English)' in result:
-            return 'en_US'
-        elif 'en (English)' in result:
-            return 'en'
-        else:
-            # Who knows what's been going on. Assume the user has set their environment 
-            # LC_LANG properly and don't add the parameters.
-            return None
-
     # Open the mkvinfo process and parse its output.
     def get_mkvinfo(self):
         mkvinfo_args = [self.args.tool_paths["mkvinfo"]]
 
         # Language code can either be 'en' or 'en_US' depending on platform. 
         # This ensures that the output of this tool can be parsed.
-        language_code = self.get_en_ui_language()
+        # Default 'en_US' depending for Linux
+        language_code = 'en_US'
         if language_code:
             mkvinfo_args.append("--ui-language")
             mkvinfo_args.append(language_code)
