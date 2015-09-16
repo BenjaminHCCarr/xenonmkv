@@ -1,6 +1,7 @@
 import subprocess
 import fractions
 import os
+import traceback
 
 from xenonmkv.utils.text import REFERENCE_FRAMES_INFO
 from xenonmkv.utils.reference_frame import ReferenceFrameValidator
@@ -44,8 +45,8 @@ class MKVFile:
             result = subprocess.check_output(mkvinfo_args, shell=False, bufsize=0,
                                              close_fds=True, stderr=subprocess.PIPE,
                                              universal_newlines=True)
-        except subprocess.CalledProcessError as e:
-            self.log.debug("mkvinfo process error: {0}".format(e.output))
+        except subprocess.CalledProcessError:
+            self.log.debug("mkvinfo process error: {0}".format(traceback.print_exc()))
             raise Exception("Error occurred while obtaining MKV information "
                             "for {0} - please make sure the file exists, is readable and "
                             "a valid MKV file".format(self.get_path()))
