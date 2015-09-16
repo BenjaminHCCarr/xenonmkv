@@ -41,7 +41,9 @@ class MKVFile:
         mkvinfo_args.append(self.get_path())
         self.log.debug("Executing '{0}'".format(' '.join(mkvinfo_args)))
         try:
-            result = subprocess.check_output(mkvinfo_args)
+            result = subprocess.check_output(mkvinfo_args, shell=False, bufsize=0,
+                                             close_fds=True, stderr=subprocess.PIPE,
+                                             universal_newlines=True)
         except subprocess.CalledProcessError as e:
             self.log.debug("mkvinfo process error: {0}".format(e.output))
             raise Exception("Error occurred while obtaining MKV information "
@@ -511,7 +513,6 @@ class MKVFile:
         if (self.args.resume_previous and
                 os.path.isfile(temp_video_file) and
                 os.path.isfile(temp_audio_file)):
-
             self.log.debug("Temporary video and audio files already exist; "
                            "cancelling extract")
             temp_video_file = os.path.join(os.getcwd(), temp_video_file)
