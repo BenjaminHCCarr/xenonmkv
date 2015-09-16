@@ -241,6 +241,8 @@ class MKVFile:
 
                 track.height = int(mediainfo_track[0])
                 track.width = int(mediainfo_track[1])
+                self.log.debug('Track Height: {0}, Track Width: {1}'
+                               .format(str(track.height), str(track.width)))
 
                 try:
                     # Possible condition: no reference frames detected
@@ -253,6 +255,7 @@ class MKVFile:
                                    "frames".format(mediainfo_track[2], track.number))
 
                 track.language = mediainfo_track[3].lower()
+                self.log.debug('Track Language: {0}'.format(str(track.language)))
 
                 track.codec_id = mediainfo_track[5]
                 track.display_ar = self.parse_display_aspect_ratio(
@@ -287,7 +290,10 @@ class MKVFile:
 
                 track.codec_id = mediainfo_track[0]
                 track.language = mediainfo_track[1].lower()
-                track.channels = int(mediainfo_track[2])
+                try:
+                    track.channels = int(mediainfo_track[2])
+                except Exception:
+                    track.channels = 2
 
                 # Indicate if the audio track needs a recode.
                 # By default, it does.
