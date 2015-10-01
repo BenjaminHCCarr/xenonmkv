@@ -31,7 +31,7 @@ class MP4Box():
                "-add", self.video_path, "-fps", self.video_fps,
                "-add", self.audio_path, "-tmp", self.args.scratch_dir,
                "-new",
-               "-itags", "name=" + str(self.args.name.split('/')[:1]) + ".mp4"]
+               "-itags", "name=" + str(self.args.name.split('/')[:1][0]) + ".mp4"]
 
         ph = ProcessHandler(self.args, self.log)
         process = ph.start_output(cmd)
