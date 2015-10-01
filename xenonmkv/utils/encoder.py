@@ -15,7 +15,7 @@ class AACEncoder():
 
     def detect_encoder(self):
         # New encoders can be added here when necessary
-        self.encoder = "faac"
+        self.encoder = "aac"
 
     def encode(self):
         if not self.encoder:
@@ -25,7 +25,7 @@ class AACEncoder():
         os.chdir(self.args.scratch_dir)
 
         # Based on the encoder, perform the appropriate operation
-        # so self.encoder = faac will call self.encode_faac()
+        # so self.encoder = aac will call self.encode_aac()
         getattr(self, "encode_%s" % self.encoder)()
 
         os.chdir(prev_dir)
@@ -34,15 +34,19 @@ class AACEncoder():
 
     def encode_faac(self):
         # Start encoding
-        self.log.debug("Using FAAC to encode AAC audio file")
+        self.log.debug("Using ffmpeg to encode AAC audio file")
 
         if self.args.resume_previous and os.path.isfile("audiodump.aac"):
             self.log.debug("audiodump.aac already exists in scratch "
                            "directory; cancelling encode")
             return True
 
-        cmd = [self.args.tool_paths["faac"], "-q",
-               str(self.args.faac_quality), self.file_path]
+        cmd = ["ffmpeg",
+               "-i", os.path.join(self.file_path, "audiodump.wav"),
+               '-acodec', 'aac',
+               '-strict', 'experimental',
+               '-b:a', '192k',
+               os.path.join(self.file_path, 'audiodump.aac')]
         ph = ProcessHandler(self.args, self.log)
 
         return ph.start_output(cmd)

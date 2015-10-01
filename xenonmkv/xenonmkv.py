@@ -477,7 +477,7 @@ def main():
         # Once audio has been decoded to a WAV,
         # use the appropriate AAC encoder to transform it to .aac
         enc = AACEncoder(
-            os.path.join(args.scratch_dir, "audiodump.wav"), log, args)
+            args.scratch_dir, log, args)
         enc.encode()
         encoded_audio = os.path.join(args.scratch_dir, "audiodump.aac")
     else:
