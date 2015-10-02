@@ -32,7 +32,7 @@ class AACEncoder():
 
         self.log.debug("Encoding to AAC audio file complete")
 
-    def encode_faac(self):
+    def encode_aac(self):
         # Start encoding
         self.log.debug("Using ffmpeg to encode AAC audio file")
 
