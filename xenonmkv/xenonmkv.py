@@ -3,6 +3,7 @@
 # XenonMKV: wrapper utility for MKV to MP4 container conversions
 # barisariburnu, barisariburnu@gmail.com
 # https://github.com/barisariburnu/xenonmkv
+import decimal
 
 import sys
 import os
@@ -411,49 +412,12 @@ def main():
         print "Processing: {0}".format(args.source_file)
 
     try:
-        to_convert = MKVFile(args.source_file, log, args)
+        to_convert = MKVFile(args, log)
         to_convert.get_mkvinfo()
     except Exception as e:
         if not args.preserve_temp_files:
             cleanup_temp_files()
-        log_exception("get_mkvinfo", e)
-
-    # If the user knows which A/V tracks they want, set them.
-    # MKVFile will not overwrite them.
-    try_set_video_track(to_convert)
-    try_set_audio_track(to_convert)
-
-    try:
-        # Check for multiple tracks
-        if to_convert.has_multiple_av_tracks():
-            log.debug("Source file {0} has multiple audio or "
-                      "video tracks".format(args.source_file))
-
-            # First, pick default tracks,
-            # which can be overridden in select_tracks
-            to_convert.set_default_av_tracks()
-
-            if args.select_tracks:
-                video_tracks = to_convert.video_track_list()
-                audio_tracks = to_convert.audio_track_list()
-                if len(video_tracks) > 1:
-                    args.video_track = select_track("video", video_tracks)
-                    try_set_video_track(to_convert)
-                if len(audio_tracks) > 1:
-                    args.audio_track = select_track("audio", audio_tracks)
-                    try_set_audio_track(to_convert)
-            else:
-                log.debug("Selected default audio and video tracks")
-
-        else:
-            # Pick default (or only) audio/video tracks
-            log.debug("Source file {0} has 1 audio and 1 video track; "
-                      "using these".format(args.source_file))
-            to_convert.set_default_av_tracks()
-    except Exception as e:
-        if not args.preserve_temp_files:
-            cleanup_temp_files()
-        log_exception("set_default_av_tracks", e)
+        raise log_exception("get_mkvinfo", e)
 
     # Next phase: Extract MKV files to scratch directory
     try:
@@ -461,7 +425,7 @@ def main():
     except Exception as e:
         if not args.preserve_temp_files:
             cleanup_temp_files()
-        log_exception("extract_mkv", e)
+        raise log_exception("extract_mkv", e)
 
     # If needed, hex edit the video file to make it compliant
     # with a lower h264 profile level
@@ -469,7 +433,7 @@ def main():
         f_utils.hex_edit_video_file(video_file)
 
     # Detect which audio codec is in place and dump audio to WAV accordingly
-    if to_convert.get_audio_track().needs_recode:
+    if not audio_file.endswith(".mp3") and not audio_file.endswith(".aac"):
         log.debug("Audio track {0} needs to be re-encoded".format(audio_file))
         audio_dec = AudioDecoder(audio_file, log, args)
         audio_dec.decode()
@@ -483,11 +447,13 @@ def main():
     else:
         # The audio track does not need to be re-encoded.
         # Reference the already-valid audio file and put it into the MP4 container.
+        log.debug("Audio track {0} does not needs to be re-encoded".format(audio_file))
         encoded_audio = audio_file
 
     # Now, throw things back together into a .mp4 container with Mp4Box.
-    video_track = to_convert.get_video_track()
-    mp4box = MP4Box(video_file, encoded_audio, video_track.frame_rate, args, log)
+    total, avg = to_convert.options.tracks.get('video_avg_frame_rate').split('/')
+    frame_rate = decimal.Decimal(decimal.Decimal(total) / decimal.Decimal(avg))
+    mp4box = MP4Box(video_file, encoded_audio, round(frame_rate, 3), to_convert.options, log)
     try:
         mp4box.package()
     except Exception as e:
