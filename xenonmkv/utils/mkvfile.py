@@ -4,7 +4,9 @@ import traceback
 
 from process_handler import ProcessHandler
 
-
+video_format = ['h264']
+audio_format = ['aac', 'ac3', 'mp3', 'wav', 'm4a',
+                'flac', 'wma', 'eac3', 'ogg', 'dts']
 class MKVFile:
     def __init__(self, args, log):
         self.options = args
@@ -45,16 +47,33 @@ class MKVFile:
         self.logger.debug("Started to format tracks")
         # Parse groups and remove last tilde separator character
         result = {}
-        prefix = 'video_'
+        prefix = ''
+        index = '0'
 
         for line in lines.split(os.linesep):
             if not line.strip():
                 continue
-            if line.startswith('index='):
+            # Get stream index for row record
+            elif line.startswith('index='):
                 index = line[6:]
-                if index != '0':
+                continue
+            # Get stream codec name
+            elif line.startswith('codec_name='):
+                codec_name = line[11:]
+                # Specified supported formats is marked
+                if codec_name not in video_format \
+                        and codec_name not in audio_format:
+                    prefix = ''
+                elif codec_name in video_format:
+                    prefix = 'video_'.format(index=index)
+                elif codec_name in audio_format:
                     prefix = 'audio{index}_'.format(index=index)
                 result['{prefix}index'.format(prefix=prefix)] = index
+                result['{prefix}codec_name'.format(prefix=prefix)] = codec_name
+                continue
+
+            # Unsupported formats is not save
+            if prefix == '':
                 continue
 
             row = '{prefix}{key}'.format(prefix=prefix, key=line)
