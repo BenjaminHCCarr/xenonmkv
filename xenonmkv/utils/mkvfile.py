@@ -175,9 +175,9 @@ class MKVFile:
             self.logger.debug("Using {0} as scratch directory for "
                               "MKV extraction".format(self.options.scratch_dir))
 
-        video_track_id = self.options.tracks.get('video')[5]
+        video_track_id = int(self.options.tracks.get('video')[5])
         video_codec = self.options.tracks.get('video')[1]
-        audio_track_id = self.options.tracks.get('audio')[5]
+        audio_track_id = int(self.options.tracks.get('audio')[5])
         audio_codec = self.options.tracks.get('audio')[1]
         try:
             temp_video_file = "temp_video{extension}".format(
@@ -211,23 +211,29 @@ class MKVFile:
                 os.path.join(self.options.scratch_dir, temp_audio_file)))
             os.unlink(temp_audio_file)
 
-        self.logger.debug("Using video track from MKV file with ID {0} "
-                          .format(str(video_track_id)))
-        self.logger.debug("Using audio track from MKV file with ID {0} "
-                          .format(str(audio_track_id)))
+        for step in range(-1, 2):
+            video_track_id += step
+            audio_track_id += step
+            self.logger.debug("Using video track from MKV file with ID {0} "
+                              .format(str(video_track_id)))
+            self.logger.debug("Using audio track from MKV file with ID {0} "
+                              .format(str(audio_track_id)))
 
-        video_output = str(video_track_id) + ":" + temp_video_file
-        audio_output = str(audio_track_id) + ":" + temp_audio_file
+            video_output = str(video_track_id) + ":" + temp_video_file
+            audio_output = str(audio_track_id) + ":" + temp_audio_file
 
-        cmd = ['mkvextract', "tracks",
-               self.options.source_file, video_output, audio_output]
-        ph = ProcessHandler(self.options, self.logger)
-        process = ph.start_output(cmd)
+            cmd = ['mkvextract', "tracks",
+                   self.options.source_file, video_output, audio_output]
+            ph = ProcessHandler(self.options, self.logger)
+            process = ph.start_output(cmd)
 
-        if process != 0:
-            raise Exception("An error occurred while extracting tracks from {0}"
-                            " - please make sure this file exists and is readable"
-                            .format(self.options.source_file))
+            if process == 0:
+                break
+
+            if process != 0 and step == 1:
+                raise Exception("An error occurred while extracting tracks from {0}"
+                                " - please make sure this file exists and is readable"
+                                .format(self.options.source_file))
 
         temp_video_file = os.path.join(self.options.scratch_dir, temp_video_file)
         temp_audio_file = os.path.join(self.options.scratch_dir, temp_audio_file)
