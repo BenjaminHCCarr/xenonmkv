@@ -3,11 +3,9 @@
 # XenonMKV: wrapper utility for MKV to MP4 container conversions
 # barisariburnu, barisariburnu@gmail.com
 # https://github.com/barisariburnu/xenonmkv
-import decimal
 
 import sys
 import os
-import re
 import ConfigParser
 
 
@@ -31,7 +29,6 @@ if sys.version_info[0] == 2 and sys.version_info[1] < 7:
     else:
         prompt_install_python27()
 
-import shutil
 import argparse
 import logging
 import traceback
@@ -83,38 +80,6 @@ def try_set_audio_track(to_convert):
             to_convert.set_audio_track(args.audio_track)
     except Exception as e:
         log_exception("set_audio_track", e, "warning")
-
-
-def select_track(track_type, tracks):
-    track_values = []
-
-    for track in tracks:
-        track_values.append(str(track))
-
-    track_type = track_type.lower()
-    title = track_type[0:1].upper() + track_type[1:]
-
-    try:
-        try_track = None
-        # Output type of track list and prompt to pick one
-        print "== {0} Tracks ==".format(title)
-        for track in tracks:
-            print tracks[track]
-        while not try_track:
-            try_track = raw_input("Select a {0} track or Ctrl+C to exit: ".format(
-                                  track_type))
-            if try_track in track_values:
-                return int(try_track)
-
-            log.error("Track '{0}' not in {1} track list, "
-                      "please pick a valid track.".format(try_track, track_type))
-            try_track = None
-
-    except KeyboardInterrupt:
-        # Output a new line before the critical message
-        print
-        log.critical("Track selection cancelled; exiting")
-        sys.exit(1)
 
 
 def parse_config_file(args):
@@ -393,7 +358,7 @@ def main():
         log_exception("check_source_file", e)
 
     source_basename = os.path.basename(args.source_file)
-    log.debug("SOURCE BASENAME: {0}".format(source_basename))
+    log.debug("Source Basename: {0}".format(source_basename))
     source_noext = source_basename
 
     if not args.name:
@@ -451,9 +416,8 @@ def main():
         encoded_audio = audio_file
 
     # Now, throw things back together into a .mp4 container with Mp4Box.
-    total, avg = to_convert.options.tracks.get('video_avg_frame_rate').split('/')
-    frame_rate = decimal.Decimal(decimal.Decimal(total) / decimal.Decimal(avg))
-    mp4box = MP4Box(video_file, encoded_audio, round(frame_rate, 3), to_convert.options, log)
+    frame_rate = to_convert.options.tracks.get('video')[7]
+    mp4box = MP4Box(video_file, encoded_audio, frame_rate, to_convert.options, log)
     try:
         mp4box.package()
     except Exception as e:
