@@ -222,6 +222,10 @@ def main():
                             help="""Specify a name for the final MP4 container.
                             Defaults to the original file name.""",
                             default="")
+    proc_group.add_argument('-tn', '--tag-name',
+                            help="""Specify a tag name for the final MP4 container.
+                            Defaults to the original file name.""",
+                            default="")
     proc_group.add_argument('-preserve', '--preserve-temp-files',
                             help="""Preserve temporary files on the filesystem rather
                              than deleting them at the end of each run.""",
@@ -364,6 +368,10 @@ def main():
     if not args.name:
         args.name = source_noext
         log.debug("Using '{0}' as final container name".format(args.name))
+
+    if not args.tag_name:
+        args.tag_name = source_noext
+        log.debug("Using '{0}' as tag name".format(args.tag_name))
 
     # Check if destination directory exists
     try:

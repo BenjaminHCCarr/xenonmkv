@@ -31,7 +31,9 @@ class MP4Box():
                "-add", self.video_path, "-fps", self.video_fps,
                "-add", self.audio_path, "-tmp", self.args.scratch_dir,
                "-new",
-               "-itags", "name=" + str(self.args.name.split('/')[:1][0]) + ".mp4"]
+               "-itags",
+               "comment=Put.io Re-container" + ":" +
+               "name=" + str(self.args.tag_name) + ".mp4"]
 
         ph = ProcessHandler(self.args, self.log)
         process = ph.start_output(cmd)
@@ -39,7 +41,8 @@ class MP4Box():
         if process != 0:
             # Destroy temporary file
             # so it does not have multiple tracks imported
-            os.unlink(output_file)
+            if os.path.isfile(output_file):
+                os.unlink(output_file)
             self.log.warning("An error occurred while creating "
                              "an MP4 file with MP4Box")
             # Continue retrying to create the file
