@@ -32,8 +32,8 @@ class MP4Box():
                "-add", self.audio_path, "-tmp", self.args.scratch_dir,
                "-new",
                "-itags",
-               "comment=Put.io Re-container" + ":" +
-               "name=" + str(self.args.tag_name) + ".mp4"]
+               "comment=" + str(self.args.tag_comment) + ":" +
+               "name=" + str(self.args.tag_name)]
 
         ph = ProcessHandler(self.args, self.log)
         process = ph.start_output(cmd)

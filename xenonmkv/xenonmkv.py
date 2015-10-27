@@ -226,6 +226,9 @@ def main():
                             help="""Specify a tag name for the final MP4 container.
                             Defaults to the original file name.""",
                             default="")
+    proc_group.add_argument('-tc', '--tag-comment',
+                            help="""Specify a tag name for the final MP4 container.""",
+                            default="")
     proc_group.add_argument('-preserve', '--preserve-temp-files',
                             help="""Preserve temporary files on the filesystem rather
                              than deleting them at the end of each run.""",
