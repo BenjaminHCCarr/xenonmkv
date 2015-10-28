@@ -9,10 +9,11 @@ class MP4Box():
     args = log = None
 
     def __init__(self, video_path, audio_path, video_fps,
-                 args, log):
+                 video_pixel_ar, args, log):
         self.video_path = video_path
         self.audio_path = audio_path
         self.video_fps = str(video_fps)
+        self.video_pixel_ar = video_pixel_ar
         self.args = args
         self.log = log
 
@@ -26,26 +27,45 @@ class MP4Box():
         if os.path.isfile(output_file):
             os.unlink(output_file)
 
-        cmd = [self.args.tool_paths["mp4box"], self.args.name + ".mp4",
-               # Always create new file with mp4box/GPAC
-               "-add", self.video_path, "-fps", self.video_fps,
-               "-add", self.audio_path, "-tmp", self.args.scratch_dir,
-               "-new",
-               "-itags",
-               "comment=" + str(self.args.tag_comment) + ":" +
-               "name=" + str(self.args.tag_name)]
+        run_attempts = 1
+        while run_attempts <= self.args.mp4box_retries:
+            cmd = [self.args.tool_paths["mp4box"], self.args.name + ".mp4",
+                   # Always create new file with mp4box/GPAC
+                   "-add", self.video_path, "-fps", self.video_fps,
+                   "-par", "1=" + self.video_pixel_ar,
+                   "-add", self.audio_path, "-tmp", self.args.scratch_dir,
+                   "-new", "-itags",
+                   "comment=" + str(self.args.tag_comment) + ":" +
+                   "name=" + str(self.args.tag_name)]
 
-        ph = ProcessHandler(self.args, self.log)
-        process = ph.start_output(cmd)
+            ph = ProcessHandler(self.args, self.log)
+            process = ph.start_output(cmd)
 
-        if process != 0:
-            # Destroy temporary file
-            # so it does not have multiple tracks imported
+            if process != 0:
+                # Destroy temporary file
+                # so it does not have multiple tracks imported
+                if os.path.isfile(output_file):
+                    os.unlink(output_file)
+                self.log.warning("An error occurred while creating "
+                                 "an MP4 file with MP4Box")
+                run_attempts += 1
+                # Continue retrying to create the file
+            else:
+                # File was created successfully; exit retry loop
+                break
+
+        if run_attempts > self.args.mp4box_retries:
+            # Delete the temporary file so that nobody gets tempted to use it
             if os.path.isfile(output_file):
-                os.unlink(output_file)
-            self.log.warning("An error occurred while creating "
-                             "an MP4 file with MP4Box")
-            # Continue retrying to create the file
+                try:
+                    if os.path.isfile(output_file):
+                        os.unlink(output_file)
+                except:
+                    # Don't really care, just as long as the file is gone.
+                    pass
+
+            raise Exception("MP4Box could not create file after {0} retries; "
+                            "giving up.".format(self.args.mp4box_retries))
 
         self.log.debug("MP4Box process complete")
 
