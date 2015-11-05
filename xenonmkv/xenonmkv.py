@@ -82,6 +82,38 @@ def try_set_audio_track(to_convert):
         log_exception("set_audio_track", e, "warning")
 
 
+def select_track(track_type, tracks):
+    track_values = []
+
+    for track in tracks:
+        track_values.append(str(track))
+
+    track_type = track_type.lower()
+    title = track_type[0:1].upper() + track_type[1:]
+
+    try:
+        try_track = None
+        # Output type of track list and prompt to pick one
+        print "== {0} Tracks ==".format(title)
+        for track in tracks:
+            print tracks[track]
+        while not try_track:
+            try_track = raw_input("Select a {0} track or Ctrl+C to exit: ".format(
+                                  track_type))
+            if try_track in track_values:
+                return int(try_track)
+
+            log.error("Track '{0}' not in {1} track list, "
+                      "please pick a valid track.".format(try_track, track_type))
+            try_track = None
+
+    except KeyboardInterrupt:
+        # Output a new line before the critical message
+        print
+        log.critical("Track selection cancelled; exiting")
+        sys.exit(1)
+
+
 def parse_config_file(args):
     available_args = vars(args).keys()
     output = [("debug", "Parsing configuration settings from file {0}".format(
@@ -381,16 +413,55 @@ def main():
         print "Processing: {0}".format(args.source_file)
 
     try:
-        to_convert = MKVFile(args, log)
+        to_convert = MKVFile(args.source_file, log, args)
         to_convert.get_mkvinfo()
     except Exception as e:
         if not args.preserve_temp_files:
             cleanup_temp_files()
         raise log_exception("get_mkvinfo", e)
 
+    # If the user knows which A/V tracks they want, set them.
+    # MKVFile will not overwrite them.
+    try_set_video_track(to_convert)
+    try_set_audio_track(to_convert)
+
+    try:
+        # Check for multiple tracks
+        if to_convert.has_multiple_av_tracks():
+            log.debug("Source file {0} has multiple audio or "
+                      "video tracks".format(args.source_file))
+
+            # First, pick default tracks,
+            # which can be overridden in select_tracks
+            to_convert.set_default_av_tracks()
+
+            if args.select_tracks:
+                video_tracks = to_convert.video_track_list()
+                audio_tracks = to_convert.audio_track_list()
+                if len(video_tracks) > 1:
+                    args.video_track = select_track("video", video_tracks)
+                    try_set_video_track(to_convert)
+                if len(audio_tracks) > 1:
+                    args.audio_track = select_track("audio", audio_tracks)
+                    try_set_audio_track(to_convert)
+            else:
+                log.debug("Selected default audio and video tracks")
+
+        else:
+            # Pick default (or only) audio/video tracks
+            log.debug("Source file {0} has 1 audio and 1 video track; "
+                      "using these".format(args.source_file))
+            to_convert.set_default_av_tracks()
+    except Exception as e:
+        if not args.preserve_temp_files:
+            cleanup_temp_files()
+        log_exception("set_default_av_tracks", e)
+
     # Next phase: Extract MKV files to scratch directory
     try:
         (video_file, audio_file) = to_convert.extract_mkv()
+        log.debug("Video File: {0} ".format(video_file))
+        log.debug("Audio File: {0} ".format(audio_file))
     except Exception as e:
         if not args.preserve_temp_files:
             cleanup_temp_files()
@@ -401,7 +472,7 @@ def main():
     if video_file.endswith(".h264"):
         f_utils.hex_edit_video_file(video_file)
 
-    args.channels = to_convert.options.channels
+    args.channels = to_convert.args.channels
     # Detect which audio codec is in place and dump audio to WAV accordingly
     if not audio_file.endswith(".aac"):
         log.debug("Audio track {0} needs to be re-encoded".format(audio_file))
@@ -421,8 +492,8 @@ def main():
         encoded_audio = audio_file
 
     # Now, throw things back together into a .mp4 container with Mp4Box.
-    frame_rate = to_convert.options.tracks.get('video')[7]
-    mp4box = MP4Box(video_file, encoded_audio, frame_rate, to_convert.options, log)
+    video_track = to_convert.get_video_track()
+    mp4box = MP4Box(video_file, encoded_audio, video_track.frame_rate, args, log)
     try:
         mp4box.package()
     except Exception as e:

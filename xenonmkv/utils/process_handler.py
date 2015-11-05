@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+import traceback
 
 
 class ProcessHandler:
@@ -47,8 +48,10 @@ class ProcessHandler:
             if fnull:
                 fnull.close()
             sys.exit(1)
-
-        if fnull:
-            fnull.close()
+        except:
+            raise traceback.print_exc()
+        finally:
+            if fnull:
+                fnull.close()
 
         return p
