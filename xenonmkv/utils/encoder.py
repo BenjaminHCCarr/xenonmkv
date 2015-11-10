@@ -45,7 +45,7 @@ class AACEncoder():
                "-i", os.path.join(self.file_path, "audiodump.wav"),
                '-acodec', 'aac',
                '-strict', 'experimental',
-               '-b:a', '192k',
+               '-b:a', '128k',
                os.path.join(self.file_path, 'audiodump.aac')]
         ph = ProcessHandler(self.args, self.log)
 
