@@ -473,7 +473,7 @@ def main():
         f_utils.hex_edit_video_file(video_file)
 
     # Detect which audio codec is in place and dump audio to WAV accordingly
-    if to_convert.get_audio_track().needs_recode:
+    if not audio_file.endswith(".aac"):
         log.debug("Audio track {0} needs to be re-encoded".format(audio_file))
         audio_dec = AudioDecoder(audio_file, log, args)
         audio_dec.decode()
