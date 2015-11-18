@@ -34,19 +34,15 @@ class AACEncoder():
 
     def encode_aac(self):
         # Start encoding
-        self.log.debug("Using ffmpeg to encode AAC audio file")
+        self.log.debug("Using FAAC to encode AAC audio file")
 
         if self.args.resume_previous and os.path.isfile("audiodump.aac"):
             self.log.debug("audiodump.aac already exists in scratch "
                            "directory; cancelling encode")
             return True
 
-        cmd = ["ffmpeg",
-               "-i", os.path.join(self.file_path, "audiodump.wav"),
-               '-acodec', 'aac',
-               '-strict', 'experimental',
-               '-b:a', '128k',
-               os.path.join(self.file_path, 'audiodump.aac')]
+        cmd = [self.args.tool_paths["faac"], "-q",
+               str(self.args.faac_quality), self.file_path]
         ph = ProcessHandler(self.args, self.log)
 
         return ph.start_output(cmd)

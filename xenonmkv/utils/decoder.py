@@ -50,7 +50,7 @@ class AudioDecoder():
             os.unlink(audiodump_file)
 
         cmd = [self.args.tool_paths["mplayer"], self.file_path, "-benchmark",
-               "-vc", "null", "-vo", "null", "-channels", str(self.args.channels),
+               "-vc", "null", "-vo", "null", "-channels", '2',
                "-noautosub", "-ao", "pcm:fast"]
         ph = ProcessHandler(self.args, self.log)
         ph.start_output(cmd)
