@@ -1,12 +1,11 @@
 import subprocess
 import fractions
 import os
-import traceback
 
 from xenonmkv.utils.reference_frame import ReferenceFrameValidator
 from xenonmkv.utils.mkv_info_parser import MKVInfoParser
 from xenonmkv.utils.process_handler import ProcessHandler
-from xenonmkv.utils.track import AudioTrack, VideoTrack, UnsupportedCodecError
+from xenonmkv.utils.track import AudioTrack, VideoTrack, UnsupportedCodecError, MKVTrack
 
 
 class MKVFile:
@@ -31,8 +30,6 @@ class MKVFile:
         mkvinfo_args = [self.args.tool_paths["mkvinfo"], "--ui-language", "en_US", self.get_path()]
         self.log.debug("Executing 'mkvinfo {0}'".format(' '.join(mkvinfo_args)))
         try:
-            # Force mkvinfo to output details in English; corrected version of pull request
-            # <https://github.com/jbillo/xenonmkv/pull/14>
             result = subprocess.check_output(mkvinfo_args)
         except subprocess.CalledProcessError as e:
             self.log.debug("mkvinfo process error: {0}".format(e.output))
@@ -56,34 +53,27 @@ class MKVFile:
         else:
             parameters = "Audio;%ID%,%CodecID%,%Language%,%Channels%,~"
 
-        try:
-            subprocess_args = [self.args.tool_paths["mediainfo"],
-                               "--Inform=" + parameters, self.get_path()]
-            self.log.debug("Executing '{0}'".format(' '.join(subprocess_args)))
-            result = subprocess.check_output(subprocess_args)
-            self.log.debug("mediainfo finished; attempting to parse output "
-                           "for {0} settings".format(track_type))
-        except:
-            raise traceback.print_exc()
-
+        subprocess_args = [self.args.tool_paths["mediainfo"],
+                           "--Inform=" + parameters, self.get_path()]
+        self.log.debug("Executing '{0}'".format(' '.join(subprocess_args)))
+        result = subprocess.check_output(subprocess_args)
+        self.log.debug("mediainfo finished; attempting to parse output "
+                       "for {0} settings".format(track_type))
         return self.parse_mediainfo(result)
 
     def parse_mediainfo(self, result):
         output = []
         result = result.replace(os.linesep, "")
 
-        try:
-            # Obtain multiple tracks if they are present
-            lines = result.split("~")
-            lines = lines[0:-1]  # remove last tilde separator character
+        # Obtain multiple tracks if they are present
+        lines = result.split("~")
+        lines = lines[0:-1]  # remove last tilde separator character
 
-            for line in lines:
-                # remove last element from array that will always be present
-                values = line.split(",")
-                # print values
-                output.append(values)
-        except:
-            raise traceback.print_exc()
+        for line in lines:
+            # remove last element from array that will always be present
+            values = line.split(",")
+            # print values
+            output.append(values)
 
         return output
 
@@ -156,29 +146,26 @@ class MKVFile:
     def parse_audio_duration(self, output):
         audio_int = 0
 
-        try:
-            duration_detect_string = "| + Duration: "
-            audio_duration = output[output.index(duration_detect_string) +
-                                    len(duration_detect_string):]
+        duration_detect_string = "| + Duration: "
+        audio_duration = output[output.index(duration_detect_string) +
+                                len(duration_detect_string):]
 
-            if not "s" in audio_duration:
-                raise Exception("Could not parse MKV duration - no 's' seconds specified")
+        if not "s" in audio_duration:
+            raise Exception("Could not parse MKV duration - no 's' seconds specified")
 
-            audio_duration = audio_duration[0:audio_duration.index("s")]
+        audio_duration = audio_duration[0:audio_duration.index("s")]
 
-            self.log.debug("Audio duration detected as {0} seconds".format(
-                audio_duration))
+        self.log.debug("Audio duration detected as {0} seconds".format(
+            audio_duration))
 
-            # Check if there is a decimal value; if so, add one second
-            if "." in audio_duration:
-                audio_duration = audio_duration[0:audio_duration.index(".")]
-                audio_int += 1
+        # Check if there is a decimal value; if so, add one second
+        if "." in audio_duration:
+            audio_duration = audio_duration[0:audio_duration.index(".")]
+            audio_int += 1
 
-            audio_int += int(audio_duration)
-            self.log.debug("Audio duration for MKV file may have been rounded: "
-                           "using {0} seconds".format(audio_int))
-        except:
-            raise traceback.print_exc()
+        audio_int += int(audio_duration)
+        self.log.debug("Audio duration for MKV file may have been rounded: "
+                       "using {0} seconds".format(audio_int))
 
         return audio_int
 
@@ -211,10 +198,9 @@ class MKVFile:
         # Create a new parser that can be used for all tracks
         info_parser = MKVInfoParser(self.log)
         has_audio = has_video = False
-        temp_audio_channel = 0
-        temp_audio = {}
 
         while track_detect_string in track_info:
+            track = MKVTrack(self.log)
             if track_detect_string in track_info:
                 track_info = track_info[track_info.index(track_detect_string) +
                                         len(track_detect_string):]
@@ -282,7 +268,7 @@ class MKVFile:
                     self.log.warning("Video track {0} contains too many "
                                      "reference frames to play properly on low-powered "
                                      "devices.".format(track.number)
-                                     )
+                    )
                     if not self.args.ignore_reference_frames:
                         raise Exception("Video track {0} has too many "
                                         "reference frames".format(track.number))
@@ -365,7 +351,7 @@ class MKVFile:
             elif track.track_type == "audio":
                 audio_tracks += 1
 
-        return video_tracks > 1 or audio_tracks > 1
+        return (video_tracks > 1 or audio_tracks > 1)
 
     def set_video_track(self, track_id):
         if (self.tracks[track_id] and
@@ -503,6 +489,16 @@ class MKVFile:
                            "MKV extraction".format(self.args.scratch_dir))
             os.chdir(self.args.scratch_dir)
 
+        mkvtoolnix_video_id = self.tracks[self.video_track_id].mkvtoolnix_id
+        mkvtoolnix_audio_id = self.tracks[self.audio_track_id].mkvtoolnix_id
+
+        self.log.debug("Using video track from MKV file with ID {0} "
+                       "(mkvtoolnix ID {1})".format(
+            self.video_track_id, mkvtoolnix_video_id))
+        self.log.debug("Using audio track from MKV file with ID {0} "
+                       "(mkvtoolnix ID {1})".format(
+            self.audio_track_id, mkvtoolnix_audio_id))
+
         try:
             temp_video_file = ("temp_video" +
                                self.tracks[self.video_track_id].get_filename_extension())
@@ -520,7 +516,7 @@ class MKVFile:
             temp_video_file = os.path.join(os.getcwd(), temp_video_file)
             temp_audio_file = os.path.join(os.getcwd(), temp_audio_file)
             os.chdir(prev_dir)
-            return temp_video_file, temp_audio_file
+            return (temp_video_file, temp_audio_file)
 
         # Remove any existing files with the same names
         if os.path.isfile(temp_video_file):
@@ -532,39 +528,18 @@ class MKVFile:
                 os.path.join(os.getcwd(), temp_audio_file)))
             os.unlink(temp_audio_file)
 
-        mkvtoolnix_video_id = self.tracks[self.video_track_id].mkvtoolnix_id
-        mkvtoolnix_audio_id = self.tracks[self.audio_track_id].mkvtoolnix_id
+        video_output = str(mkvtoolnix_video_id) + ":" + temp_video_file
+        audio_output = str(mkvtoolnix_audio_id) + ":" + temp_audio_file
 
-        if mkvtoolnix_audio_id > 0 and mkvtoolnix_video_id > 0:
-            mkvtoolnix_video_id -= 1
-            mkvtoolnix_audio_id -= 1
+        cmd = [self.args.tool_paths["mkvextract"], "tracks",
+               self.get_path(), video_output, audio_output]
+        ph = ProcessHandler(self.args, self.log)
+        process = ph.start_output(cmd)
 
-        for step in range(3):
-            self.log.debug("Using video track from MKV file with ID {0} "
-                           "(mkvtoolnix ID {1})".format(
-                self.video_track_id, mkvtoolnix_video_id))
-            self.log.debug("Using audio track from MKV file with ID {0} "
-                           "(mkvtoolnix ID {1})".format(
-                self.audio_track_id, mkvtoolnix_audio_id))
-
-            video_output = str(mkvtoolnix_video_id) + ":" + temp_video_file
-            audio_output = str(mkvtoolnix_audio_id) + ":" + temp_audio_file
-
-            cmd = [self.args.tool_paths["mkvextract"], "tracks",
-                   self.get_path(), video_output, audio_output]
-            ph = ProcessHandler(self.args, self.log)
-            process = ph.start_output(cmd)
-
-            if process == 0:
-                break
-
-            if process != 0 and step == 2:
-                raise Exception("An error occurred while extracting tracks from {0}"
-                                " - please make sure this file exists and is readable".format(
-                    self.get_path()))
-
-            mkvtoolnix_video_id += 1
-            mkvtoolnix_audio_id += 1
+        if process != 0:
+            raise Exception("An error occurred while extracting tracks from {0}"
+                            " - please make sure this file exists and is readable".format(
+                self.get_path()))
 
         temp_video_file = os.path.join(os.getcwd(), temp_video_file)
         temp_audio_file = os.path.join(os.getcwd(), temp_audio_file)

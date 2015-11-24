@@ -9,10 +9,11 @@ class MP4Box():
     args = log = None
 
     def __init__(self, video_path, audio_path, video_fps,
-                 args, log):
+                 video_pixel_ar, args, log):
         self.video_path = video_path
         self.audio_path = audio_path
         self.video_fps = str(video_fps)
+        self.video_pixel_ar = video_pixel_ar
         self.args = args
         self.log = log
 
@@ -31,6 +32,7 @@ class MP4Box():
             cmd = [self.args.tool_paths["mp4box"], self.args.name + ".mp4",
                    # Always create new file with mp4box/GPAC
                    "-add", self.video_path, "-fps", self.video_fps,
+                   "-par", "1=" + self.video_pixel_ar,
                    "-add", self.audio_path, "-tmp", self.args.scratch_dir,
                    "-new",
                    "-itags",

@@ -3,7 +3,7 @@ import os
 from xenonmkv.utils.process_handler import ProcessHandler
 
 
-class AACEncoder():
+class AACEncoder:
     file_path = ""
     log = args = None
     encoder = ""
@@ -41,8 +41,15 @@ class AACEncoder():
                            "directory; cancelling encode")
             return True
 
-        cmd = [self.args.tool_paths["faac"], "-q",
-               str(self.args.faac_quality), self.file_path]
+        cmd = ["ffmpeg",
+               "-i", os.path.join(self.file_path, "audiodump.wav"),
+               '-acodec', 'aac',
+               '-strict', 'experimental',
+               '-b:a', '192k',
+               '-ar', '48000',
+               '-async', '48000',
+               '-ac', '2',
+               os.path.join(self.file_path, 'audiodump.aac')]
         ph = ProcessHandler(self.args, self.log)
 
         return ph.start_output(cmd)

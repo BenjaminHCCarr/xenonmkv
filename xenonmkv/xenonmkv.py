@@ -418,7 +418,7 @@ def main():
     except Exception as e:
         if not args.preserve_temp_files:
             cleanup_temp_files()
-        raise log_exception("get_mkvinfo", e)
+        log_exception("get_mkvinfo", e)
 
     # If the user knows which A/V tracks they want, set them.
     # MKVFile will not overwrite them.
@@ -460,12 +460,10 @@ def main():
     # Next phase: Extract MKV files to scratch directory
     try:
         (video_file, audio_file) = to_convert.extract_mkv()
-        log.debug("Video File: {0} ".format(video_file))
-        log.debug("Audio File: {0} ".format(audio_file))
     except Exception as e:
         if not args.preserve_temp_files:
             cleanup_temp_files()
-        raise log_exception("extract_mkv", e)
+        log_exception("extract_mkv", e)
 
     # If needed, hex edit the video file to make it compliant
     # with a lower h264 profile level
@@ -480,8 +478,7 @@ def main():
 
         # Once audio has been decoded to a WAV,
         # use the appropriate AAC encoder to transform it to .aac
-        enc = AACEncoder(
-            os.path.join(args.scratch_dir, "audiodump.wav"), log, args)
+        enc = AACEncoder(args.scratch_dir, log, args)
         enc.encode()
         encoded_audio = os.path.join(args.scratch_dir, "audiodump.aac")
     else:
@@ -490,9 +487,10 @@ def main():
         log.debug("Audio track {0} does not needs to be re-encoded".format(audio_file))
         encoded_audio = audio_file
 
-    # Now, throw things back together into a .mp4 container with Mp4Box.
+    # Now, throw things back together into a .mp4 container with MP4Box.
     video_track = to_convert.get_video_track()
-    mp4box = MP4Box(video_file, encoded_audio, video_track.frame_rate, args, log)
+    mp4box = MP4Box(video_file, encoded_audio, video_track.frame_rate,
+                    video_track.pixel_ar, args, log)
     try:
         mp4box.package()
     except Exception as e:
