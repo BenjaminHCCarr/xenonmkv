@@ -34,7 +34,6 @@ import logging
 import traceback
 
 from utils.file_utils import FileUtils
-from utils.decoder import AudioDecoder
 from utils.encoder import AACEncoder
 from utils.mp4box import MP4Box
 from utils.mkvfile import MKVFile
@@ -473,10 +472,7 @@ def main():
     # Detect which audio codec is in place and dump audio to WAV accordingly
     if not audio_file.endswith(".aac"):
         log.debug("Audio track {0} needs to be re-encoded".format(audio_file))
-        audio_dec = AudioDecoder(audio_file, log, args)
-        audio_dec.decode()
 
-        # Once audio has been decoded to a WAV,
         # use the appropriate AAC encoder to transform it to .aac
         enc = AACEncoder(args.scratch_dir, log, args)
         enc.encode()

@@ -42,13 +42,15 @@ class AACEncoder:
             return True
 
         cmd = ["ffmpeg",
-               "-i", os.path.join(self.file_path, "audiodump.wav"),
+               "-i", os.path.join(self.file_path, "temp_audio.ac3"),
                '-acodec', 'aac',
                '-strict', 'experimental',
                '-b:a', '192k',
                '-ar', '48000',
                '-async', '48000',
                '-ac', '2',
+               '-clev', '1.414',
+               '-slev', '.5',
                os.path.join(self.file_path, 'audiodump.aac')]
         ph = ProcessHandler(self.args, self.log)
 
