@@ -392,7 +392,7 @@ def main():
 
     source_basename = os.path.basename(args.source_file)
     log.debug("Source Basename: {0}".format(source_basename))
-    source_noext = source_basename
+    source_noext = os.path.splitext(source_basename)[0]
 
     if not args.name:
         args.name = source_noext
