@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 # XenonMKV: wrapper utility for MKV to MP4 container conversions
+# BenjaminHCCarr, bencarr@gmail.com
 # barisariburnu, barisariburnu@gmail.com
-# https://github.com/barisariburnu/xenonmkv
+# https://github.com/BenjaminHCCarr/xenonmkv
 
 import sys
 import os
 import ConfigParser
+import shutil
 
 
 def prompt_install_python27():
@@ -495,7 +497,9 @@ def main():
         log_exception("package", e)
 
     # Move the file to the destination directory with the original name
+    scratch_path = os.path.join(args.scratch_dir, source_noext + ".mp4")
     dest_path = os.path.join(args.destination, source_noext + ".mp4")
+    shutil.move(scratch_path, dest_path)
 
     log.info("Processing of {0} complete; file saved as {1}".format(
              args.source_file, dest_path))
