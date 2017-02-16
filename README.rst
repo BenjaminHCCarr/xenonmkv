@@ -168,3 +168,8 @@ By default, XenonMKV tries not to resample, downmix or re-encode any part of the
 If the audio track in your MKV file is already AAC, the next thing to consider is your playback device. The Xbox 360 will not play audio in an MP4 container unless it is 2-channel stereo, which is a highly stupid limitation. Other devices, like the PlayBook, will happily parse up to 5.1 channel audio. By using either the `--channels` or `--profile` settings, you can tell XenonMKV how many channels of audio are acceptable from an AAC source before it will aggressively re-encode and downmix to 2-channel stereo.
 
 In short, if you plan to play MP4s on your Xbox 360, definitely use the `--profile xbox360` setting to make sure that no more than two channels make it into the output file. If your device is more reasonable, the default settings should be fine. More profiles will be added as users confirm their own device capabilities.
+
+
+.. image:: https://badges.gitter.im/xenonmkv/Lobby.svg
+   :alt: Join the chat at https://gitter.im/xenonmkv/Lobby
+   :target: https://gitter.im/xenonmkv/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
